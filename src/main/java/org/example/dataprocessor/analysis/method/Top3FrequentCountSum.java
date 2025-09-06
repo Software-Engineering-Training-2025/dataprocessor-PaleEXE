@@ -9,30 +9,36 @@ public class Top3FrequentCountSum implements Analysis {
         if (data.isEmpty()) {
             return 0.0;
         }
-        List<Integer> top3Freq = sortFreq(count(data));
 
-        return top3Freq.stream().mapToDouble(Integer::doubleValue).sum();
-    }
+        Collections.sort(data);
 
-    public Map<Integer, Integer> count(List<Integer> data) {
-        Map<Integer, Integer> freq = new HashMap<>();
-        for (Integer d : data) {
-            freq.put(d, freq.getOrDefault(d, 0) + 1);
+        int[] freq = {0, 0, 0};
+        int last = data.getFirst();
+        int count = 0;
+
+        for (int x : data) {
+            if (x == last) {
+                count++;
+            } else {
+                insertTop3(freq, count);
+                count = 1;
+                last = x;
+            }
         }
-        return freq;
+        insertTop3(freq, count);
+
+        return (double) (freq[0] + freq[1] + freq[2]);
     }
 
-    public List<Integer> sortFreq(Map<Integer, Integer> freq) {
-        return freq.entrySet().stream()
-                .sorted((a, b) -> {
-                    int cmp = b.getValue().compareTo(a.getValue());
-                    if (cmp == 0) {
-                        return a.getKey().compareTo(b.getKey());
-                    }
-                    return cmp;
-                })
-                .map(Map.Entry::getValue)
-                .limit(3)
-                .toList();
+    private static void insertTop3(int[] freq, int count) {
+        for (int i = 0; i < 3; i++) {
+            if (count > freq[i]) {
+                for (int j = 2; j > i; j--) {
+                    freq[j] = freq[j - 1];
+                }
+                freq[i] = count;
+                break;
+            }
+        }
     }
 }
